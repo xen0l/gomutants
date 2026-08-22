@@ -7,7 +7,9 @@ import (
 
 type errorfWrap struct{}
 
-func (e *errorfWrap) Type() MutationType { return ErrorfWrap }
+func (e *errorfWrap) Type() MutationType  { return ErrorfWrap }
+func (e *errorfWrap) Description() string { return "Downgrade the error-wrapping verb" }
+func (e *errorfWrap) Example() string     { return `fmt.Errorf("%w") -> fmt.Errorf("%v")` }
 
 // Discover downgrades the error-wrapping verb `%w` to `%v` in Errorf-style
 // calls. The formatted message is byte-for-byte identical, but the returned

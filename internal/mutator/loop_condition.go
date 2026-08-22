@@ -7,7 +7,9 @@ import (
 
 type loopCondition struct{}
 
-func (m *loopCondition) Type() MutationType { return LoopCondition }
+func (m *loopCondition) Type() MutationType  { return LoopCondition }
+func (m *loopCondition) Description() string { return "Force for-loop condition to false" }
+func (m *loopCondition) Example() string     { return "for i < n; -> for false;" }
 
 // Discover emits a mutant for every `for ...; cond; ... { }` that replaces
 // the condition with the literal `false`. Three constructs are deliberately

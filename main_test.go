@@ -90,6 +90,59 @@ func TestRunUnleash(t *testing.T) {
 	}
 }
 
+// TestRunListMutators covers `--list-mutators`: the catalog has to print
+// from anywhere, without a module, package argument, or usable config —
+// the whole point is a fast local lookup of a mutator name. Running it
+// from an empty temp dir proves the early return precedes config.Load and
+// package resolution.
+func TestRunListMutators(t *testing.T) {
+	dir := t.TempDir()
+	orig, _ := os.Getwd()
+	os.Chdir(dir)
+	defer os.Chdir(orig)
+
+	out, err := captureOutput(t, func() error {
+		return run(context.Background(), []string{"--list-mutators"})
+	})
+	if err != nil {
+		t.Fatalf("run --list-mutators: %v", err)
+	}
+
+	lines := strings.Split(strings.TrimSuffix(out, "\n"), "\n")
+	catalog := mutator.NewRegistry().Catalog()
+	if len(lines) != len(catalog) {
+		t.Fatalf("got %d lines, want one per mutator (%d):\n%s", len(lines), len(catalog), out)
+	}
+	for i, e := range catalog {
+		// Fields are separated by padding, so assert on order within the
+		// line rather than an exact column layout.
+		name, rest, ok := strings.Cut(lines[i], " ")
+		if !ok || name != string(e.Type) {
+			t.Fatalf("line %d = %q, want it to start with %q", i, lines[i], e.Type)
+		}
+		descAt := strings.Index(rest, e.Description)
+		exAt := strings.Index(rest, e.Example)
+		if descAt < 0 || exAt < 0 || exAt < descAt+len(e.Description) {
+			t.Errorf("line %d = %q, want description %q then example %q",
+				i, lines[i], e.Description, e.Example)
+		}
+	}
+}
+
+// TestRunListMutatorsUnleash guards the gremlins-compat "unleash" prefix
+// strip for the catalog path too.
+func TestRunListMutatorsUnleash(t *testing.T) {
+	out, err := captureOutput(t, func() error {
+		return run(context.Background(), []string{"unleash", "--list-mutators"})
+	})
+	if err != nil {
+		t.Fatalf("run unleash --list-mutators: %v", err)
+	}
+	if !strings.Contains(out, "ARITHMETIC_BASE") {
+		t.Errorf("unleash: expected catalog output, got %q", out)
+	}
+}
+
 func TestRunInvalidFlag(t *testing.T) {
 	_, err := captureStderr(t, func() error {
 		return run(context.Background(), []string{"--invalid-flag"})

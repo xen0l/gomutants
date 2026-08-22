@@ -7,7 +7,9 @@ import (
 
 type invertLoopCtrl struct{}
 
-func (i *invertLoopCtrl) Type() MutationType { return InvertLoopCtrl }
+func (i *invertLoopCtrl) Type() MutationType  { return InvertLoopCtrl }
+func (i *invertLoopCtrl) Description() string { return "Swap loop control" }
+func (i *invertLoopCtrl) Example() string     { return "break <-> continue" }
 
 var invertLoopCtrlSwaps = map[token.Token]token.Token{
 	token.BREAK:    token.CONTINUE,

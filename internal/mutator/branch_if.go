@@ -7,7 +7,9 @@ import (
 
 type branchIf struct{}
 
-func (b *branchIf) Type() MutationType { return BranchIf }
+func (b *branchIf) Type() MutationType  { return BranchIf }
+func (b *branchIf) Description() string { return "Empty if/else-if body" }
+func (b *branchIf) Example() string     { return "if x { f() } -> if x { _ = 0 }" }
 
 func (b *branchIf) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

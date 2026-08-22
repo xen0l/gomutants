@@ -7,7 +7,9 @@ import (
 
 type removeSelfAssignments struct{}
 
-func (r *removeSelfAssignments) Type() MutationType { return RemoveSelfAssignments }
+func (r *removeSelfAssignments) Type() MutationType  { return RemoveSelfAssignments }
+func (r *removeSelfAssignments) Description() string { return "Drop op from compound assignment" }
+func (r *removeSelfAssignments) Example() string     { return "x += y -> x = y" }
 
 // removeSelfAssignmentsTargets is the set of compound assignment tokens
 // (`x op= y`). The mutation drops the op so the statement becomes plain

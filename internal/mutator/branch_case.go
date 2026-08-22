@@ -7,7 +7,9 @@ import (
 
 type branchCase struct{}
 
-func (b *branchCase) Type() MutationType { return BranchCase }
+func (b *branchCase) Type() MutationType  { return BranchCase }
+func (b *branchCase) Description() string { return "Empty case body" }
+func (b *branchCase) Example() string     { return "case 1: f() -> case 1: _ = 0" }
 
 func (b *branchCase) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

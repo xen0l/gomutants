@@ -3,12 +3,29 @@ package mutator
 import (
 	"go/ast"
 	"go/token"
+	"slices"
+	"strings"
 )
 
 // Mutator discovers mutation candidates in a parsed Go source file.
 type Mutator interface {
 	Type() MutationType
+	// Description is the one-line summary shown by --list-mutators.
+	// Part of the interface, not a side table, so a new mutator cannot be
+	// registered without one and the listing cannot drift from the code
+	// that actually runs.
+	Description() string
+	// Example is the short before/after shown by --list-mutators.
+	Example() string
 	Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate
+}
+
+// CatalogEntry is one row of the mutator catalog printed by
+// --list-mutators.
+type CatalogEntry struct {
+	Type        MutationType
+	Description string
+	Example     string
 }
 
 // Registry holds all registered mutators. typeSet mirrors mutators by
@@ -41,16 +58,24 @@ func NewRegistry() *Registry {
 		&branchCase{},
 		&expressionRemove{},
 		&statementRemove{},
-		&literalStep{typ: IntegerIncrement, kind: token.INT, delta: 1},
-		&literalStep{typ: IntegerDecrement, kind: token.INT, delta: -1},
-		&literalStep{typ: FloatIncrement, kind: token.FLOAT, delta: 1},
-		&literalStep{typ: FloatDecrement, kind: token.FLOAT, delta: -1},
+		&literalStep{typ: IntegerIncrement, kind: token.INT, delta: 1,
+			description: "Increment integer literal", example: "42 -> 43, 0xFF -> 256"},
+		&literalStep{typ: IntegerDecrement, kind: token.INT, delta: -1,
+			description: "Decrement integer literal", example: "42 -> 41, 0 -> -1"},
+		&literalStep{typ: FloatIncrement, kind: token.FLOAT, delta: 1,
+			description: "Increment float literal", example: "1.5 -> 2.5, 0.0 -> 1.0"},
+		&literalStep{typ: FloatDecrement, kind: token.FLOAT, delta: -1,
+			description: "Decrement float literal", example: "1.5 -> 0.5, 1e2 -> 99.0"},
 		&loopCondition{},
 		&rangeBreak{},
-		&returnValue{typ: ReturnErrorNil, owns: ownsError, replacement: fixed("nil")},
-		&returnValue{typ: ReturnZero, owns: ownsOther, replacement: zeroValueExpr},
-		&returnValue{typ: ReturnTrue, owns: ownsBool, replacement: fixed("true")},
-		&returnValue{typ: ReturnFalse, owns: ownsBool, replacement: fixed("false")},
+		&returnValue{typ: ReturnErrorNil, owns: ownsError, replacement: fixed("nil"),
+			description: "Swallow a propagated error", example: "return nil, err -> return nil, nil"},
+		&returnValue{typ: ReturnZero, owns: ownsOther, replacement: zeroValueExpr,
+			description: "Return the zero value instead", example: "return count -> return 0"},
+		&returnValue{typ: ReturnTrue, owns: ownsBool, replacement: fixed("true"),
+			description: "Force a boolean return true", example: "return x > 0 -> return true"},
+		&returnValue{typ: ReturnFalse, owns: ownsBool, replacement: fixed("false"),
+			description: "Force a boolean return false", example: "return x > 0 -> return false"},
 	}
 	typeSet := make(map[string]struct{}, len(mutators))
 	for _, m := range mutators {
@@ -62,6 +87,25 @@ func NewRegistry() *Registry {
 // Mutators returns all registered mutators.
 func (r *Registry) Mutators() []Mutator {
 	return r.mutators
+}
+
+// Catalog returns every registered mutator's entry, sorted by type name.
+// Registry order groups mutators by how they were added, which shifts over
+// time; alphabetical is what makes the listing greppable and two runs
+// diffable.
+func (r *Registry) Catalog() []CatalogEntry {
+	entries := make([]CatalogEntry, 0, len(r.mutators))
+	for _, m := range r.mutators {
+		entries = append(entries, CatalogEntry{
+			Type:        m.Type(),
+			Description: m.Description(),
+			Example:     m.Example(),
+		})
+	}
+	slices.SortFunc(entries, func(a, b CatalogEntry) int {
+		return strings.Compare(string(a.Type), string(b.Type))
+	})
+	return entries
 }
 
 // IsKnown reports whether name matches a registered mutator type.

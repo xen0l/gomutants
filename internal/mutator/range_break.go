@@ -7,7 +7,9 @@ import (
 
 type rangeBreak struct{}
 
-func (m *rangeBreak) Type() MutationType { return RangeBreak }
+func (m *rangeBreak) Type() MutationType  { return RangeBreak }
+func (m *rangeBreak) Description() string { return "Break out of a for-range body early" }
+func (m *rangeBreak) Example() string     { return "range xs { f(v) } -> { break; f(v) }" }
 
 // Discover emits a mutant for every `for ... range x { ... }` that inserts
 // an unconditional `break` as the body's first statement. The result loops

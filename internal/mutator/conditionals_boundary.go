@@ -7,7 +7,9 @@ import (
 
 type conditionalsBoundary struct{}
 
-func (c *conditionalsBoundary) Type() MutationType { return ConditionalsBoundary }
+func (c *conditionalsBoundary) Type() MutationType  { return ConditionalsBoundary }
+func (c *conditionalsBoundary) Description() string { return "Relax/tighten comparison boundaries" }
+func (c *conditionalsBoundary) Example() string     { return "< <-> <=, > <-> >=" }
 
 var boundarySwaps = map[token.Token]token.Token{
 	token.LSS: token.LEQ,

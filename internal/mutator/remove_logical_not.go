@@ -7,7 +7,9 @@ import (
 
 type removeLogicalNot struct{}
 
-func (r *removeLogicalNot) Type() MutationType { return RemoveLogicalNot }
+func (r *removeLogicalNot) Type() MutationType  { return RemoveLogicalNot }
+func (r *removeLogicalNot) Description() string { return "Drop ! from a logical negation" }
+func (r *removeLogicalNot) Example() string     { return "if !ok -> if ok" }
 
 // Discover drops the `!` from logical-negation expressions, so `if !ok`
 // becomes `if ok`. Where CONDITIONALS_NEGATION reaches only binary

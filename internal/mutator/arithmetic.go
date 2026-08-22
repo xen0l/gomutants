@@ -7,7 +7,9 @@ import (
 
 type arithmeticBase struct{}
 
-func (a *arithmeticBase) Type() MutationType { return ArithmeticBase }
+func (a *arithmeticBase) Type() MutationType  { return ArithmeticBase }
+func (a *arithmeticBase) Description() string { return "Swap arithmetic operators" }
+func (a *arithmeticBase) Example() string     { return "+ <-> -, * <-> /, % -> *" }
 
 // arithmeticSwaps maps each arithmetic operator to a single replacement.
 // Asymmetric by design: REM → MUL catches divisor/remainder confusion,

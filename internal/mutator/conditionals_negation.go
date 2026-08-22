@@ -7,7 +7,9 @@ import (
 
 type conditionalsNegation struct{}
 
-func (c *conditionalsNegation) Type() MutationType { return ConditionalsNegation }
+func (c *conditionalsNegation) Type() MutationType  { return ConditionalsNegation }
+func (c *conditionalsNegation) Description() string { return "Negate comparisons" }
+func (c *conditionalsNegation) Example() string     { return "== <-> !=, < <-> >=, > <-> <=" }
 
 var negationSwaps = map[token.Token]token.Token{
 	token.EQL: token.NEQ,

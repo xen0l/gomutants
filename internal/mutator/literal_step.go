@@ -23,9 +23,16 @@ type literalStep struct {
 	// relies on the canonical re-formatted result differing from the source
 	// span, which only holds when delta ≠ 0. All registry entries pass ±1.
 	delta int
+	// description and example are this instance's --list-mutators entry.
+	// Per-instance like typ, because one literalStep type backs four
+	// distinct mutators that each need their own wording.
+	description string
+	example     string
 }
 
-func (m *literalStep) Type() MutationType { return m.typ }
+func (m *literalStep) Type() MutationType  { return m.typ }
+func (m *literalStep) Description() string { return m.description }
+func (m *literalStep) Example() string     { return m.example }
 
 func (m *literalStep) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	return numericLiteralCandidates(fset, file, m.typ, m.kind, m.delta)

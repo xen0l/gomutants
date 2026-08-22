@@ -8,7 +8,9 @@ import (
 
 type statementRemove struct{}
 
-func (s *statementRemove) Type() MutationType { return StatementRemove }
+func (s *statementRemove) Type() MutationType  { return StatementRemove }
+func (s *statementRemove) Description() string { return "Remove statement effect" }
+func (s *statementRemove) Example() string     { return "x = expr -> _ = expr, f() -> _ = 0" }
 
 func (s *statementRemove) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

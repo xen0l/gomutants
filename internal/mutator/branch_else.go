@@ -7,7 +7,9 @@ import (
 
 type branchElse struct{}
 
-func (b *branchElse) Type() MutationType { return BranchElse }
+func (b *branchElse) Type() MutationType  { return BranchElse }
+func (b *branchElse) Description() string { return "Empty else body" }
+func (b *branchElse) Example() string     { return "else { f() } -> else { _ = 0 }" }
 
 func (b *branchElse) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

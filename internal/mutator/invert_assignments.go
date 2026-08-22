@@ -7,7 +7,9 @@ import (
 
 type invertAssignments struct{}
 
-func (i *invertAssignments) Type() MutationType { return InvertAssignments }
+func (i *invertAssignments) Type() MutationType  { return InvertAssignments }
+func (i *invertAssignments) Description() string { return "Swap arithmetic compound assignments" }
+func (i *invertAssignments) Example() string     { return "+= <-> -=, *= <-> /=, %= -> *=" }
 
 // invertAssignmentsSwaps mirrors the arithmetic-base swaps but on compound
 // assignment tokens. REM_ASSIGN → MUL_ASSIGN matches `%` → `*` from the

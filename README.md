@@ -566,6 +566,17 @@ Priority: built-in defaults < config file < CLI flags. See [`.gomutants.yml.exam
 
 ### Mutators
 
+`gomutants --list-mutators` prints this catalog from the binary — same names, one line each,
+straight from the registry. Use it to check a name before putting it in `--only` / `--disable`:
+
+```console
+$ gomutants --list-mutators | grep RETURN
+RETURN_ERROR_NIL            Swallow a propagated error            return nil, err -> return nil, nil
+RETURN_FALSE                Force a boolean return false          return x > 0 -> return false
+RETURN_TRUE                 Force a boolean return true           return x > 0 -> return true
+RETURN_ZERO                 Return the zero value instead         return count -> return 0
+```
+
 **Token-level:**
 
 | Type | Description | Example |
@@ -666,6 +677,7 @@ Each return slot is claimed by exactly one of these, based on the type declared 
 | `--verbose` | `-v` | false | Stream each mutant as tested |
 | `--quiet` | `-q` | false | Suppress header, phase lines, and per-mutant progress; only the final summary lands on stdout (warnings still go to stderr). Mutually exclusive with `--verbose`. |
 | `--version` | | | Print version and exit |
+| `--list-mutators` | | false | Print every mutator type with its description and example, then exit. Generated from the registry, so it can't drift from the mutators that actually run. Needs no module, package argument, or config file. |
 
 </details>
 
@@ -687,7 +699,8 @@ gomutants -v ./...
 # Quiet for CI: only the final summary on stdout (exit code still gates).
 gomutants -q --threshold-efficacy 80 ./...
 
-# Limit to specific mutators (or exclude some).
+# Limit to specific mutators (or exclude some); --list-mutators prints the valid names.
+gomutants --list-mutators
 gomutants --only ARITHMETIC_BASE,CONDITIONALS_NEGATION ./...
 gomutants --disable BRANCH_IF,BRANCH_ELSE ./...
 

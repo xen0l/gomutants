@@ -135,7 +135,8 @@ output: mutation-report.json
 # exclude-calls entries you list (or none at all). Default: true.
 # exclude-calls-defaults: true
 
-# Available mutator types (28 total):
+# Available mutator types (28 total). `gomutants --list-mutators` prints
+# this same list, with examples, straight from the binary:
 #   Token-level:
 #     ARITHMETIC_BASE             — swap +/-, */%, etc.
 #     CONDITIONALS_BOUNDARY       — swap </<=, >/>=

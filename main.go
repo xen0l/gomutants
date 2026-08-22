@@ -18,6 +18,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"text/tabwriter"
 	"time"
 
 	"github.com/szhekpisov/gomutants/internal/cache"
@@ -114,6 +115,24 @@ func vcsSetting(key string) string {
 func formatVersion() string {
 	return fmt.Sprintf("gomutants v%s (commit: %s, built: %s)\n",
 		effectiveVersion(), effectiveCommit(), effectiveBuildDate())
+}
+
+// writeMutatorCatalog renders the `--list-mutators` listing: one line per
+// registered mutator, sorted by type name, with its description and
+// example. Sourced from the registry rather than a hand-kept table so it
+// can't drift from the mutators that actually run.
+//
+// No header row, so the output pipes into grep as-is
+// (`gomutants --list-mutators | grep RETURN`).
+func writeMutatorCatalog(w io.Writer, reg *mutator.Registry) {
+	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
+	for _, e := range reg.Catalog() {
+		fmt.Fprintf(tw, "%s\t%s\t%s\n", e.Type, e.Description, e.Example)
+	}
+	// Flush's error mirrors the underlying writer's, which for terminal
+	// output is the same broken pipe we'd have nowhere to report to —
+	// the same reasoning .golangci.yml applies to fmt.Fprintf.
+	_ = tw.Flush()
 }
 
 // cacheToolVersion is the identifier stamped into the cache's
@@ -278,6 +297,7 @@ func run(ctx context.Context, args []string) error {
 		quiet             bool
 		integration       bool
 		showVersion       bool
+		listMutators      bool
 	)
 
 	fs.IntVar(&workers, "workers", 0, "parallel workers (default: NumCPU)")
@@ -371,6 +391,7 @@ func run(ctx context.Context, args []string) error {
 	fs.BoolVar(&quiet, "q", false, "quiet (shorthand)")
 	fs.BoolVar(&integration, "integration", false, "cross-package mode: route each mutant to covering tests in any package that imports it (widens coverage + the per-test build to the reverse-dependency closure). Manages -coverpkg itself; passing --coverpkg too is an error")
 	fs.BoolVar(&showVersion, "version", false, "print version and exit")
+	fs.BoolVar(&listMutators, "list-mutators", false, "print every mutator type with its description and example, then exit")
 
 	if err := fs.Parse(args); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
@@ -395,6 +416,14 @@ func run(ctx context.Context, args []string) error {
 
 	if showVersion {
 		fmt.Fprint(stdout, formatVersion())
+		return nil
+	}
+
+	// Ahead of config.Load and package resolution: looking up what a
+	// mutator name means has to work from any directory, with no module,
+	// no package argument, and a config file the run would reject.
+	if listMutators {
+		writeMutatorCatalog(stdout, mutator.NewRegistry())
 		return nil
 	}
 

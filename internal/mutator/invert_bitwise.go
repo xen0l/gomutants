@@ -7,7 +7,9 @@ import (
 
 type invertBitwise struct{}
 
-func (i *invertBitwise) Type() MutationType { return InvertBitwise }
+func (i *invertBitwise) Type() MutationType  { return InvertBitwise }
+func (i *invertBitwise) Description() string { return "Swap bitwise binary operators" }
+func (i *invertBitwise) Example() string     { return "& <-> |, ^ -> &, << <-> >>" }
 
 // invertBitwiseSwaps covers the bitwise binary operators. XOR and AND_NOT
 // fall back to AND because XOR ↔ OR / AND_NOT ↔ OR don't carry the same

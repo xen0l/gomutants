@@ -67,9 +67,16 @@ type returnValue struct {
 	// replacement returns the substitute source text for such a slot, or
 	// ok=false to decline the slot because no useful mutation exists.
 	replacement func(slotCtx) (string, bool)
+	// description and example are this instance's --list-mutators entry.
+	// Per-instance like typ, because one returnValue type backs four
+	// distinct mutators that each need their own wording.
+	description string
+	example     string
 }
 
-func (m *returnValue) Type() MutationType { return m.typ }
+func (m *returnValue) Type() MutationType  { return m.typ }
+func (m *returnValue) Description() string { return m.description }
+func (m *returnValue) Example() string     { return m.example }
 
 // Discover emits a mutant for every return expression whose slot this mutator
 // owns, replacing just that expression's span with the substitute value.

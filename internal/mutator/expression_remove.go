@@ -7,7 +7,9 @@ import (
 
 type expressionRemove struct{}
 
-func (e *expressionRemove) Type() MutationType { return ExpressionRemove }
+func (e *expressionRemove) Type() MutationType  { return ExpressionRemove }
+func (e *expressionRemove) Description() string { return "Remove boolean operand" }
+func (e *expressionRemove) Example() string     { return "a && b -> true && b" }
 
 func (e *expressionRemove) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

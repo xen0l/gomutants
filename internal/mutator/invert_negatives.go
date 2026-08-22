@@ -7,7 +7,9 @@ import (
 
 type invertNegatives struct{}
 
-func (i *invertNegatives) Type() MutationType { return InvertNegatives }
+func (i *invertNegatives) Type() MutationType  { return InvertNegatives }
+func (i *invertNegatives) Description() string { return "Invert negation" }
+func (i *invertNegatives) Example() string     { return "-x -> +x, a - b -> a + b" }
 
 func (i *invertNegatives) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

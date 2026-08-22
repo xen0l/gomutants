@@ -7,7 +7,9 @@ import (
 
 type incrementDecrement struct{}
 
-func (i *incrementDecrement) Type() MutationType { return IncrementDecrement }
+func (i *incrementDecrement) Type() MutationType  { return IncrementDecrement }
+func (i *incrementDecrement) Description() string { return "Swap increment/decrement" }
+func (i *incrementDecrement) Example() string     { return "++ <-> --" }
 
 func (i *incrementDecrement) Discover(fset *token.FileSet, file *ast.File, src []byte) []MutantCandidate {
 	var candidates []MutantCandidate

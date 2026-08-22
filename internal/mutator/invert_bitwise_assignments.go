@@ -7,7 +7,9 @@ import (
 
 type invertBitwiseAssignments struct{}
 
-func (i *invertBitwiseAssignments) Type() MutationType { return InvertBitwiseAssignments }
+func (i *invertBitwiseAssignments) Type() MutationType  { return InvertBitwiseAssignments }
+func (i *invertBitwiseAssignments) Description() string { return "Swap bitwise compound assignments" }
+func (i *invertBitwiseAssignments) Example() string     { return "&= <-> |=, <<= <-> >>=" }
 
 var invertBitwiseAssignSwaps = map[token.Token]token.Token{
 	token.AND_ASSIGN:     token.OR_ASSIGN,

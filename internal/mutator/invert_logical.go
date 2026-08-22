@@ -7,7 +7,9 @@ import (
 
 type invertLogical struct{}
 
-func (i *invertLogical) Type() MutationType { return InvertLogical }
+func (i *invertLogical) Type() MutationType  { return InvertLogical }
+func (i *invertLogical) Description() string { return "Swap logical operators" }
+func (i *invertLogical) Example() string     { return "&& <-> ||" }
 
 var invertLogicalSwaps = map[token.Token]token.Token{
 	token.LAND: token.LOR,

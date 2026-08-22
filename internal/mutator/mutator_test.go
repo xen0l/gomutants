@@ -2784,3 +2784,58 @@ func findMutator(t *testing.T, typ mutator.MutationType) mutator.Mutator {
 	t.Fatalf("mutator %v not found in registry", typ)
 	return nil
 }
+
+// TestRegistryCatalog is the contract behind `gomutants --list-mutators`:
+// every registered mutator carries a usable catalog entry, and the listing
+// is a faithful, stable view of the registry. Adding a mutator without a
+// description or example fails here rather than shipping a blank row.
+func TestRegistryCatalog(t *testing.T) {
+	reg := mutator.NewRegistry()
+	catalog := reg.Catalog()
+
+	if got, want := len(catalog), len(reg.Mutators()); got != want {
+		t.Fatalf("Catalog() has %d entries, registry has %d mutators", got, want)
+	}
+
+	// Every registered type appears exactly once. Counting rather than
+	// set-membership catches a duplicate entry, which would silently
+	// double a row in the listing.
+	seen := make(map[mutator.MutationType]int, len(catalog))
+	for _, e := range catalog {
+		seen[e.Type]++
+	}
+	for _, m := range reg.Mutators() {
+		if n := seen[m.Type()]; n != 1 {
+			t.Errorf("type %s appears %d times in Catalog(), want 1", m.Type(), n)
+		}
+	}
+
+	descriptions := make(map[string]mutator.MutationType, len(catalog))
+	for _, e := range catalog {
+		if e.Description == "" {
+			t.Errorf("%s: empty Description", e.Type)
+		}
+		if e.Example == "" {
+			t.Errorf("%s: empty Example", e.Type)
+		}
+		// A duplicated description means a copy-paste slipped through:
+		// two mutators would be indistinguishable in the listing.
+		if prev, dup := descriptions[e.Description]; dup {
+			t.Errorf("%s and %s share description %q", prev, e.Type, e.Description)
+		}
+		descriptions[e.Description] = e.Type
+	}
+}
+
+// TestRegistryCatalogSortedByType pins the listing order. Alphabetical is
+// what makes `--list-mutators | grep RETURN` and a diff of two runs useful;
+// registry order is an implementation detail that shifts as mutators are added.
+func TestRegistryCatalogSortedByType(t *testing.T) {
+	catalog := mutator.NewRegistry().Catalog()
+	for i := 1; i < len(catalog); i++ {
+		if catalog[i-1].Type >= catalog[i].Type {
+			t.Errorf("catalog not sorted: %q at %d precedes %q at %d",
+				catalog[i-1].Type, i-1, catalog[i].Type, i)
+		}
+	}
+}
